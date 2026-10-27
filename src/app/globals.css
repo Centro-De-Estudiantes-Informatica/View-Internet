@@ -1,0 +1,151 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* El modo se controla con `data-theme` en <html> (next-themes). */
+@custom-variant dark (&:is([data-theme="dark"] *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-plex), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --font-heading: var(--font-sora), var(--font-plex), sans-serif;
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-sidebar: var(--sidebar);
+  --color-field: var(--field);
+  --color-field-border: var(--field-border);
+  --color-chart-muted: var(--chart-muted);
+  --color-ok: var(--status-ok);
+  --color-ok-soft: var(--status-ok-soft);
+  --color-partial: var(--status-partial);
+  --color-partial-soft: var(--status-partial-soft);
+  --color-review: var(--status-review);
+  --color-review-soft: var(--status-review-soft);
+  --color-due: var(--status-due);
+  --color-due-soft: var(--status-due-soft);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Modo claro */
+:root {
+  --radius: 0.75rem;
+  --background: #f5f7fb;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --sidebar: #eef2f8;
+  --primary: #0e7490;
+  --primary-foreground: #ffffff;
+  --secondary: #e8eef6;
+  --secondary-foreground: #0f172a;
+  --muted: #e8eef6;
+  --muted-foreground: #475569;
+  --accent: #e0f2f7;
+  --accent-foreground: #0e7490;
+  --destructive: #b91c1c;
+  --border: #dce3ee;
+  --input: #c9d3e2;
+  --ring: #0e7490;
+  --field: #ffffff;
+  --field-border: #c9d3e2;
+  --chart-muted: #9fc6d3;
+  --grid-dot: rgb(71 85 105 / 0.12);
+  --net-line: #0e7490;
+  --status-ok: #047857;
+  --status-ok-soft: rgb(4 120 87 / 0.1);
+  --status-partial: #92400e;
+  --status-partial-soft: rgb(146 64 14 / 0.1);
+  --status-review: #1d4ed8;
+  --status-review-soft: rgb(29 78 216 / 0.1);
+  --status-due: #b91c1c;
+  --status-due-soft: rgb(185 28 28 / 0.08);
+}
+
+/* Modo oscuro (por defecto en el diseño) */
+[data-theme="dark"] {
+  --background: #0b1220;
+  --foreground: #e2e8f0;
+  --card: #111a2e;
+  --card-foreground: #e2e8f0;
+  --popover: #111a2e;
+  --popover-foreground: #e2e8f0;
+  --sidebar: #0e1628;
+  --primary: #22d3ee;
+  --primary-foreground: #04131a;
+  --secondary: #16213a;
+  --secondary-foreground: #e2e8f0;
+  --muted: #16213a;
+  --muted-foreground: #94a3b8;
+  --accent: rgb(34 211 238 / 0.12);
+  --accent-foreground: #22d3ee;
+  --destructive: #fca5a5;
+  --border: #1e2a44;
+  --input: #2a3a5c;
+  --ring: #22d3ee;
+  --field: #0b1220;
+  --field-border: #2a3a5c;
+  --chart-muted: #1f6f80;
+  --grid-dot: rgb(148 163 184 / 0.07);
+  --net-line: #22d3ee;
+  --status-ok: #34d399;
+  --status-ok-soft: rgb(52 211 153 / 0.12);
+  --status-partial: #fbbf24;
+  --status-partial-soft: rgb(251 191 36 / 0.12);
+  --status-review: #93c5fd;
+  --status-review-soft: rgb(96 165 250 / 0.14);
+  --status-due: #fca5a5;
+  --status-due-soft: rgb(248 113 113 / 0.12);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* Malla de nodos de red: tenue para no competir con los datos. */
+    background-image: radial-gradient(var(--grid-dot) 1px, transparent 1.2px);
+    background-size: 28px 28px;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+  }
+}
+
+@utility tabular {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
