@@ -10,19 +10,8 @@ import { Input } from "@/components/ui/input"
 import { reportMobilePayment } from "@/lib/actions/payments"
 import { compressImage } from "@/lib/compress-image"
 import type { ActionResult } from "@/lib/errors"
+import { BANKS } from "@/lib/banks"
 import { MAX_RECEIPT_BYTES, RECEIPT_TYPES } from "@/lib/receipt"
-
-const BANKS = [
-  "Banesco",
-  "Mercantil",
-  "Venezuela",
-  "Provincial",
-  "BNC",
-  "Bancamiga",
-  "Bicentenario",
-  "Tesoro",
-  "Otro",
-]
 
 export function ReportForm({
   suggestedAmount,
@@ -107,7 +96,9 @@ export function ReportForm({
               Elige…
             </option>
             {BANKS.map((b) => (
-              <option key={b}>{b}</option>
+              <option key={b.code} value={b.code}>
+                {b.name}
+              </option>
             ))}
           </select>
         </Field>
