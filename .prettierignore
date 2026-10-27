@@ -1,0 +1,10 @@
+.next
+node_modules
+openspec
+src/lib/api/schema.d.ts
+package-lock.json
+playwright-report
+test-results
+.claude
+AGENTS.md
+.playwright-mcp
