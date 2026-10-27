@@ -60,4 +60,6 @@ src/
 e2e/                 pruebas Playwright
 ```
 
-La especificación y el diseño están en `openspec/changes/add-payment-control-web/`.
+## Documentación
+
+En [`docs/`](docs/README.md): [arquitectura](docs/arquitectura.md), [flujos](docs/flujos.md), [pantallas](docs/pantallas.md) y [desarrollo](docs/desarrollo.md). La especificación y el diseño originales están en `openspec/changes/add-payment-control-web/`.
