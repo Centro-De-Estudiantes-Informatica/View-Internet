@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Panel, PanelTitle } from "@/components/card"
 import type { Payment } from "@/lib/api/types"
+import { bankName } from "@/lib/banks"
 import { formatDate, formatMoney, formatPeriodo } from "@/lib/format"
 import { ReviewActions } from "./review-actions"
 
@@ -73,7 +74,7 @@ export function ReviewQueue({ payments, total }: { payments: Payment[]; total: n
                   </td>
                   <td className="px-3 py-3 text-foreground/85">{formatPeriodo(p.periodo)}</td>
                   <td className="tabular px-3 py-3 text-foreground">{p.reference ?? "—"}</td>
-                  <td className="px-3 py-3 text-foreground/85">{p.bank ?? "—"}</td>
+                  <td className="px-3 py-3 text-foreground/85">{bankName(p.bank)}</td>
                   <td className="px-3 py-3">
                     <div className="flex flex-col">
                       <span className="tabular text-foreground">

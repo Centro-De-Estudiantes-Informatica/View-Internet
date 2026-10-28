@@ -123,7 +123,7 @@ async function reportMobilePaymentImpl(formData: FormData): Promise<ActionResult
   const fields: Record<string, string> = {}
   if (!/^\d{4,20}$/.test(reference))
     fields.reference = "Escribe el número de referencia (solo dígitos)"
-  if (!bank) fields.bank = "Elige tu banco"
+  if (!/^\d{4}$/.test(bank)) fields.bank = "Elige tu banco"
   if (!/^0\d{10}$/.test(payerPhone)) fields.payerPhone = "Escribe un teléfono como 0414-1234567"
   if (!DATE_RE.test(paidAt) || paidAt > todayIso()) fields.paidAt = "La fecha no puede ser futura"
   const amount = parseAmountInput(text(formData, "amount"), "VES")

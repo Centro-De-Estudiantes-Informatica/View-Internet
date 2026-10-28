@@ -120,19 +120,19 @@ const mobile = (reference: string, bank: string) => ({
 })
 
 const payments: S["PaymentDto"][] = [
-  payment("u2", PERIODO, "VES", 1000, "APROBADO", mobile("552310", "Banesco")),
+  payment("u2", PERIODO, "VES", 1000, "APROBADO", mobile("552310", "0134")),
   payment("u2", "2026-11", "USD", 5, "APROBADO"),
   payment("u3", "2026-09", "USD", 5, "APROBADO", { paidAt: "2026-09-12" }),
   payment("u3", "2026-08", "VES", 960, "RECHAZADO", {
-    ...mobile("552301", "Mercantil"),
+    ...mobile("552301", "0105"),
     reviewNote: "La referencia no aparece en el banco",
     paidAt: "2026-08-10",
   }),
   payment("u4", PERIODO, "COP", 20000, "APROBADO"),
-  payment("u5", PERIODO, "VES", 600, "EN_REVISION", mobile("118094", "Mercantil")),
+  payment("u5", PERIODO, "VES", 600, "EN_REVISION", mobile("118094", "0105")),
   payment("u6", PERIODO, "USD", 5, "APROBADO"),
-  payment("u1", PERIODO, "VES", 1000, "EN_REVISION", mobile("004512", "Banesco")),
-  payment("u7", PERIODO, "VES", 1000, "EN_REVISION", mobile("773201", "Venezuela")),
+  payment("u1", PERIODO, "VES", 1000, "EN_REVISION", mobile("004512", "0134")),
+  payment("u7", PERIODO, "VES", 1000, "EN_REVISION", mobile("773201", "0102")),
 ]
 
 const history: Record<string, number> = {
@@ -529,6 +529,10 @@ export function createHandlers(baseUrl: string) {
       const form = await request.formData()
       const reference = String(form.get("reference") ?? "")
       const bank = String(form.get("bank") ?? "")
+      // Igual que el backend: código SUDEBAN de 4 dígitos y referencia de 4 a 20 dígitos.
+      if (!/^\d{4}$/.test(bank) || !/^\d{4,20}$/.test(reference)) {
+        return fail(422, "VALIDATION_ERROR", "Datos inválidos")
+      }
       const duplicate = payments.some(
         (p) =>
           p.bank === bank &&

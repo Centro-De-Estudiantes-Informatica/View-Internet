@@ -2,6 +2,7 @@ import Link from "next/link"
 import { METHOD_LABELS } from "@/components/admin/recent-payments"
 import { PaymentStatusBadge } from "@/components/status-badge"
 import type { Payment } from "@/lib/api/types"
+import { bankName } from "@/lib/banks"
 import { formatDate, formatMoney, formatPeriodo } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { PaymentRowActions } from "./payment-row-actions"
@@ -89,7 +90,7 @@ export function PaymentsTable({
                     <span className="text-foreground/85">{METHOD_LABELS[p.method]}</span>
                     {p.method === "PAGO_MOVIL" && (
                       <span className="text-xs text-muted-foreground">
-                        Ref. <span className="tabular">{p.reference}</span> · {p.bank} ·{" "}
+                        Ref. <span className="tabular">{p.reference}</span> · {bankName(p.bank)} ·{" "}
                         <ReceiptLink payment={p} />
                       </span>
                     )}

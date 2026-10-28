@@ -21,6 +21,7 @@ export function ChangePasswordForm() {
         autoComplete={autoComplete}
         required
         minLength={name === "currentPassword" ? undefined : 8}
+        maxLength={name === "currentPassword" ? undefined : 72}
         aria-invalid={fieldError(name) ? true : undefined}
         aria-describedby={fieldError(name) ? `${name}-error` : undefined}
         className={fieldClass}

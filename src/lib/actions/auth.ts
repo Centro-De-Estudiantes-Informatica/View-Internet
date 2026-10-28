@@ -1,5 +1,6 @@
 "use server"
 
+import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { z } from "zod"
 import { ApiError, api, call, publicApi } from "@/lib/api/client"
@@ -36,9 +37,15 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
 
   let dto: SessionDto
   try {
-    dto = await call(publicApi().POST("/auth/login", { body: { cedula, password } }), {
-      handleAuth: false,
-    })
+    // El backend limita los intentos por IP: se reenvía la del navegador, no la de este servidor.
+    const forwardedFor = (await headers()).get("x-forwarded-for")
+    dto = await call(
+      publicApi().POST("/auth/login", {
+        body: { cedula, password },
+        headers: forwardedFor ? { "X-Forwarded-For": forwardedFor } : undefined,
+      }),
+      { handleAuth: false },
+    )
   } catch (error) {
     if (!(error instanceof ApiError)) throw error
     const code = error.status === 401 ? "INVALID_CREDENTIALS" : error.code
@@ -56,7 +63,10 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
 const passwordSchema = z
   .object({
     currentPassword: z.string().min(1, "Escribe tu contraseña actual"),
-    newPassword: z.string().min(8, "La nueva contraseña debe tener al menos 8 caracteres"),
+    newPassword: z
+      .string()
+      .min(8, "La nueva contraseña debe tener al menos 8 caracteres")
+      .max(72, "La nueva contraseña puede tener máximo 72 caracteres"),
     confirmPassword: z.string(),
   })
   .refine((v) => v.newPassword === v.confirmPassword, {
