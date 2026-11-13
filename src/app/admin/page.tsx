@@ -8,8 +8,10 @@ import { MonthlyChart } from "@/components/admin/monthly-chart"
 import { RecentPayments } from "@/components/admin/recent-payments"
 import { PageHeader } from "@/components/card"
 import { DashboardSkeleton } from "@/components/skeletons"
+import { FeeSetupNotice } from "@/components/fee-notice"
 import { ReviewQueue } from "@/components/payments/review-queue"
 import { buttonVariants } from "@/components/ui/button"
+import { currentBilling } from "@/lib/api/billing"
 import { api, call } from "@/lib/api/client"
 import { formatPeriodo } from "@/lib/format"
 import { requireAdmin } from "@/lib/session"
@@ -28,9 +30,11 @@ export default function AdminDashboardPage() {
 async function Dashboard() {
   await requireAdmin()
   const client = await api()
-  const [summary, billing, monthly, recent, review] = await Promise.all([
+  const billing = await currentBilling(client)
+  if (!billing) return <FeeSetupNotice />
+
+  const [summary, monthly, recent, review] = await Promise.all([
     call(client.GET("/metrics/summary")),
-    call(client.GET("/billing/current")),
     call(client.GET("/metrics/monthly", { params: { query: { months: 6 } } })),
     call(client.GET("/metrics/recent", { params: { query: { limit: 5 } } })),
     call(client.GET("/payments", { params: { query: { status: "EN_REVISION", pageSize: 5 } } })),

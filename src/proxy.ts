@@ -19,6 +19,7 @@ export async function proxy(request: NextRequest) {
   }
   if (pathname === "/cambiar-clave") return to(homeFor(session))
   if (pathname.startsWith("/admin") && session.role !== "ADMIN") return to("/mi-cuenta")
+  if (pathname.startsWith("/mi-cuenta") && session.role === "ADMIN") return to("/admin")
   return NextResponse.next()
 }
 

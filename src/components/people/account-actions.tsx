@@ -30,9 +30,12 @@ export function AccountActions({
   isSelf: boolean
 }) {
   const [password, setPassword] = useState<string>()
+  const [resetOpen, setResetOpen] = useState(false)
+  const [activeOpen, setActiveOpen] = useState(false)
   const [pending, startTransition] = useTransition()
 
   function reset() {
+    setResetOpen(false)
     startTransition(async () => {
       const result = await resetPassword(userId)
       if (result?.ok) setPassword(result.data.temporaryPassword)
@@ -41,6 +44,7 @@ export function AccountActions({
   }
 
   function toggleActive() {
+    setActiveOpen(false)
     startTransition(async () => {
       const result = await setUserActive(userId, !active)
       if (result?.ok) toast.success(result.message)
@@ -51,7 +55,7 @@ export function AccountActions({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap gap-2">
-        <AlertDialog>
+        <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>
           <AlertDialogTrigger
             render={<Button variant="outline" className="h-11" disabled={pending} />}
           >
@@ -75,7 +79,7 @@ export function AccountActions({
           </AlertDialogContent>
         </AlertDialog>
         {!isSelf && (
-          <AlertDialog>
+          <AlertDialog open={activeOpen} onOpenChange={setActiveOpen}>
             <AlertDialogTrigger
               render={<Button variant="outline" className="h-11" disabled={pending} />}
             >

@@ -60,7 +60,7 @@ interface CallOptions {
 /**
  * Espera una llamada de `openapi-fetch` y devuelve sus datos o lanza `ApiError`.
  * Un 401 (token vencido o invalidado) cierra la sesión; un 403 por contraseña
- * temporal lleva a cambiarla.
+ * temporal lleva a cambiarla; un 403 por rol pide volver a entrar para tomar el rol vigente.
  */
 export async function call<T>(
   request: Promise<FetchResult<T>>,
@@ -84,6 +84,8 @@ export async function call<T>(
     if (response.status === 401) redirect("/salir?motivo=expirada")
     if (code === "PASSWORD_CHANGE_REQUIRED") redirect("/cambiar-clave")
     if (code === "ACCOUNT_DISABLED") redirect("/salir?motivo=desactivada")
+    // El rol de la cookie quedó viejo (se lo cambiaron con la sesión abierta).
+    if (code === "FORBIDDEN") redirect("/salir?motivo=permisos")
   }
   throw new ApiError(response.status, code, message, body.details)
 }

@@ -35,6 +35,10 @@ sequenceDiagram
 - Mientras la contraseña sea temporal, la API rechaza todo con `PASSWORD_CHANGE_REQUIRED` y la web lleva a `/cambiar-clave`.
 - Tras 5 intentos fallidos en 15 minutos para la misma cédula, la API responde 429 y la web pide esperar.
 
+### Instalación nueva
+
+Sin cuota configurada, la API responde `FEE_NOT_CONFIGURED`. El panel, Registrar pago y el filtro por estado muestran entonces "Falta configurar la cuota mensual" con un enlace a `/admin/ajustes`, que siempre funciona. El estudiante ve "Todavía no hay cuota configurada".
+
 ## 2. Registrar un pago en efectivo
 
 Lo hace el administrador cuando recibe dinero en la sede, en dólares, bolívares o pesos.
@@ -78,7 +82,7 @@ sequenceDiagram
   Web->>API: GET /billing/current, GET /me/status
   Web-->>Est: datos de pago de la sede y monto de hoy en Bs
   Est->>Web: referencia, banco, teléfono, fecha, monto, captura (opcional)
-  Note over Web: la captura se valida (JPG/PNG, ≤ 5 MB)<br/>y se comprime en el navegador
+  Note over Web: la captura se valida (JPG/PNG, ≤ 4 MB)<br/>y se comprime en el navegador
   Web->>API: POST /me/payments/mobile (multipart)
   API->>S3: guarda la captura
   API-->>Web: pago EN_REVISION

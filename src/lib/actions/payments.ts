@@ -5,8 +5,8 @@ import { api, call } from "@/lib/api/client"
 import type { Payment } from "@/lib/api/types"
 import type { ActionResult } from "@/lib/errors"
 import { type Currency, parseAmountInput, todayIso } from "@/lib/format"
-import { MAX_RECEIPT_BYTES, RECEIPT_TYPES } from "@/lib/receipt"
-import { requireAdmin, requireSession } from "@/lib/session"
+import { MAX_RECEIPT_BYTES, RECEIPT_ERROR, RECEIPT_TYPES } from "@/lib/receipt"
+import { requireAdmin, requireStudent } from "@/lib/session"
 import { invalid, keepValues, text, toFailure } from "./helpers"
 
 const CURRENCIES: Currency[] = ["USD", "VES", "COP"]
@@ -112,7 +112,7 @@ export async function reportMobilePayment(
 }
 
 async function reportMobilePaymentImpl(formData: FormData): Promise<ActionResult> {
-  await requireSession()
+  await requireStudent()
   const reference = text(formData, "reference").replace(/\s/g, "")
   const bank = text(formData, "bank")
   const payerPhone = text(formData, "payerPhone").replace(/[\s-]/g, "")
@@ -130,7 +130,7 @@ async function reportMobilePaymentImpl(formData: FormData): Promise<ActionResult
   if (!amount) fields.amount = "Escribe el monto en bolívares"
   const file = receipt instanceof File && receipt.size > 0 ? receipt : null
   if (file && (file.size > MAX_RECEIPT_BYTES || !RECEIPT_TYPES.includes(file.type))) {
-    fields.receipt = "La captura debe ser JPG o PNG de máximo 5 MB"
+    fields.receipt = RECEIPT_ERROR
   }
   if (Object.keys(fields).length) return invalid(fields)
 
@@ -159,7 +159,7 @@ async function reportMobilePaymentImpl(formData: FormData): Promise<ActionResult
     return toFailure(error, (code): Record<string, string> | undefined => {
       if (code === "DUPLICATE_REFERENCE") return { reference: "Esta referencia ya fue reportada" }
       if (["INVALID_RECEIPT", "PAYLOAD_TOO_LARGE", "UNSUPPORTED_MEDIA_TYPE"].includes(code)) {
-        return { receipt: "La captura debe ser JPG o PNG de máximo 5 MB" }
+        return { receipt: RECEIPT_ERROR }
       }
       return undefined
     })

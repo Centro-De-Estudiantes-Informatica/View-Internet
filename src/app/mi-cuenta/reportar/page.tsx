@@ -2,11 +2,13 @@ import { ChevronLeft } from "lucide-react"
 import type { Metadata } from "next"
 import Link from "next/link"
 import { Suspense } from "react"
+import { FeePendingNotice } from "@/components/fee-notice"
 import { CardSkeleton } from "@/components/skeletons"
+import { currentBilling } from "@/lib/api/billing"
 import { api, call } from "@/lib/api/client"
 import { env } from "@/lib/env"
 import { formatAmountInput, formatDate, formatMoney, formatRate, todayIso } from "@/lib/format"
-import { requireSession } from "@/lib/session"
+import { requireStudent } from "@/lib/session"
 import { ReportForm } from "./report-form"
 
 export const metadata: Metadata = { title: "Reportar pago móvil" }
@@ -43,12 +45,11 @@ function Datum({ label, value, mono }: { label: string; value?: string; mono?: b
 }
 
 async function Report() {
-  await requireSession()
+  await requireStudent()
   const client = await api()
-  const [billing, status] = await Promise.all([
-    call(client.GET("/billing/current")),
-    call(client.GET("/me/status")),
-  ])
+  const billing = await currentBilling(client)
+  if (!billing) return <FeePendingNotice />
+  const status = await call(client.GET("/me/status"))
   const config = env()
   const rate = billing.rates.VES
   // Sugerir lo que falta del mes más antiguo adeudado; si no, la cuota.
