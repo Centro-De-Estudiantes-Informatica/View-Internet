@@ -3,6 +3,7 @@ import { Suspense } from "react"
 import { PageHeader, Panel, PanelTitle } from "@/components/card"
 import { FeeForm, RateForm } from "@/components/settings-forms"
 import { CardSkeleton } from "@/components/skeletons"
+import { currentBilling } from "@/lib/api/billing"
 import { api, call } from "@/lib/api/client"
 import type { Rate } from "@/lib/api/types"
 import { formatDate, formatMoney, formatPeriodo, formatRate, todayIso } from "@/lib/format"
@@ -54,7 +55,7 @@ async function Settings() {
   await requireAdmin()
   const client = await api()
   const [billing, ves, cop] = await Promise.all([
-    call(client.GET("/billing/current")),
+    currentBilling(client),
     call(client.GET("/billing/rates", { params: { query: { currency: "VES", limit: 7 } } })),
     call(client.GET("/billing/rates", { params: { query: { currency: "COP", limit: 7 } } })),
   ])
@@ -65,15 +66,19 @@ async function Settings() {
       <Panel aria-labelledby="fee-t">
         <PanelTitle
           id="fee-t"
-          aside={`${formatPeriodo(billing.periodo)}: ${formatMoney(billing.feeUsd, "USD")}`}
+          aside={
+            billing
+              ? `${formatPeriodo(billing.periodo)}: ${formatMoney(billing.feeUsd, "USD")}`
+              : undefined
+          }
         >
           Cuota mensual
         </PanelTitle>
-        <FeeForm currentFee={Number(billing.feeUsd).toFixed(2)} />
+        <FeeForm currentFee={billing ? Number(billing.feeUsd).toFixed(2) : ""} />
       </Panel>
       <div className="flex flex-wrap gap-4">
         {(["VES", "COP"] as const).map((currency) => {
-          const current = billing.rates[currency]
+          const current = billing?.rates[currency]
           return (
             <Panel key={currency} aria-labelledby={`t-${currency}`} className="flex-[1_1_360px]">
               <PanelTitle

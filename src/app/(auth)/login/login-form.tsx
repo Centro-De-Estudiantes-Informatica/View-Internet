@@ -10,6 +10,7 @@ import { login, type LoginState } from "@/lib/actions/auth"
 const NOTICES: Record<string, string> = {
   expirada: "Tu sesión expiró. Vuelve a iniciar sesión.",
   desactivada: "Tu cuenta está desactivada. Habla con el administrador de la sede.",
+  permisos: "Tus permisos cambiaron. Vuelve a iniciar sesión.",
 }
 
 export function SessionNotice() {

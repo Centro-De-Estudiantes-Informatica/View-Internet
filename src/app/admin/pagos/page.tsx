@@ -10,7 +10,7 @@ import { ListSkeleton } from "@/components/skeletons"
 import { buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { api, call } from "@/lib/api/client"
-import { shiftPeriodo } from "@/lib/format"
+import { shiftPeriodo, todayIso } from "@/lib/format"
 import { oneOf, pageNumber, param } from "@/lib/search-params"
 import { requireAdmin } from "@/lib/session"
 import { cn } from "@/lib/utils"
@@ -73,24 +73,22 @@ async function PaymentsList({ searchParams }: { searchParams: SearchParams }) {
   const page = pageNumber(param(sp.page))
 
   const client = await api()
-  const [result, billing] = await Promise.all([
-    call(
-      client.GET("/payments", {
-        params: {
-          query: {
-            status,
-            periodo: periodo && /^\d{4}-\d{2}$/.test(periodo) ? periodo : undefined,
-            method,
-            currency,
-            page,
-            pageSize: PAGE_SIZE,
-          },
+  const result = await call(
+    client.GET("/payments", {
+      params: {
+        query: {
+          status,
+          periodo: periodo && /^\d{4}-\d{2}$/.test(periodo) ? periodo : undefined,
+          method,
+          currency,
+          page,
+          pageSize: PAGE_SIZE,
         },
-      }),
-    ),
-    call(client.GET("/billing/current")),
-  ])
-  const periods = Array.from({ length: 12 }, (_, i) => shiftPeriodo(billing.periodo, 1 - i))
+      },
+    }),
+  )
+  const currentPeriod = todayIso().slice(0, 7)
+  const periods = Array.from({ length: 12 }, (_, i) => shiftPeriodo(currentPeriod, 1 - i))
 
   return (
     <div className="flex flex-col gap-4">

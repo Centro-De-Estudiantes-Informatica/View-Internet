@@ -3,13 +3,15 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { Suspense } from "react"
 import { METHOD_LABELS } from "@/components/admin/recent-payments"
+import { FeePendingNotice } from "@/components/fee-notice"
 import { CardSkeleton } from "@/components/skeletons"
 import { EstadoBadge, PaymentStatusBadge } from "@/components/status-badge"
 import { buttonVariants } from "@/components/ui/button"
+import { currentBilling } from "@/lib/api/billing"
 import { api, call } from "@/lib/api/client"
 import type { MyStatus, Payment } from "@/lib/api/types"
 import { formatDate, formatMoney, formatPeriodo } from "@/lib/format"
-import { requireSession } from "@/lib/session"
+import { requireStudent } from "@/lib/session"
 import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = { title: "Mi internet" }
@@ -202,8 +204,10 @@ function History({ payments }: { payments: Payment[] }) {
 }
 
 async function MyAccount() {
-  const session = await requireSession()
+  const session = await requireStudent()
   const client = await api()
+  if (!(await currentBilling(client))) return <FeePendingNotice />
+
   const [status, payments] = await Promise.all([
     call(client.GET("/me/status")),
     call(client.GET("/me/payments")),

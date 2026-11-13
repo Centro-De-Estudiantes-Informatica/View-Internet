@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { SESSION_COOKIE } from "@/lib/session-core"
 
-const REASONS = new Set(["expirada", "desactivada"])
+const REASONS = new Set(["expirada", "desactivada", "permisos"])
 
 /** Cierra la sesión desde un Server Component (que no puede borrar cookies). */
 export function GET(request: NextRequest) {

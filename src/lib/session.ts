@@ -46,6 +46,13 @@ export async function requireAdmin(): Promise<Session> {
   return session
 }
 
+/** Exige el rol de estudiante: solo ellos tienen portal y pueden reportar pagos móviles. */
+export async function requireStudent(): Promise<Session> {
+  const session = await requireSession()
+  if (session.role !== "ESTUDIANTE") redirect("/admin")
+  return session
+}
+
 /** Nombre, cédula y rol de la sesión, sin el token. */
 export async function getSessionUser() {
   const session = await getSession()

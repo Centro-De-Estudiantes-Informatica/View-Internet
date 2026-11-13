@@ -11,7 +11,7 @@ import { reportMobilePayment } from "@/lib/actions/payments"
 import { compressImage } from "@/lib/compress-image"
 import type { ActionResult } from "@/lib/errors"
 import { BANKS } from "@/lib/banks"
-import { MAX_RECEIPT_BYTES, RECEIPT_TYPES } from "@/lib/receipt"
+import { MAX_RECEIPT_BYTES, RECEIPT_ERROR, RECEIPT_TYPES } from "@/lib/receipt"
 
 export function ReportForm({
   suggestedAmount,
@@ -52,7 +52,7 @@ export function ReportForm({
     const file = await compressImage(original)
     if (file.size > MAX_RECEIPT_BYTES) {
       input.value = ""
-      setFileError("La captura debe pesar máximo 5 MB")
+      setFileError(RECEIPT_ERROR)
       return
     }
     if (file !== original) {
@@ -155,7 +155,7 @@ export function ReportForm({
               {fileLabel ?? "Adjuntar captura (opcional)"}
             </span>
             <span className="text-xs text-muted-foreground">
-              JPG o PNG · ayuda a aprobar más rápido
+              JPG o PNG, máximo 4 MB · ayuda a aprobar más rápido
             </span>
           </span>
           <input

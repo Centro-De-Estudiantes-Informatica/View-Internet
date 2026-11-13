@@ -13,7 +13,10 @@ type PaymentStatus = S["PaymentDto"]["status"]
 const PASSWORD = "demo1234"
 const TODAY = "2026-10-26"
 const PERIODO = "2026-10"
-const FEE_USD = 5
+
+/** Cuota vigente y cuota congelada del mes en curso; `null` = instalación nueva. */
+let monthlyFee: number | null = 5
+let periodFee: number | null = 5
 
 interface MockUser {
   id: string
@@ -149,6 +152,8 @@ const ok = <T>(body: T, status = 200) => HttpResponse.json(body as never, { stat
 const fail = (status: number, code: string, message: string) =>
   HttpResponse.json({ code, message }, { status })
 
+const noFee = () => fail(422, "FEE_NOT_CONFIGURED", "Aún no se ha configurado la cuota mensual")
+
 function currentUser(request: Request): MockUser | null {
   const token = request.headers.get("authorization")?.replace(/^Bearer mock:/, "")
   return users.find((u) => u.id === token && u.active) ?? null
@@ -181,13 +186,14 @@ function session(user: MockUser): S["SessionDto"] {
 }
 
 function balance(userId: string, periodo: string): S["PeriodBalanceDto"] {
+  const fee = periodFee ?? 0
   const own = payments.filter((p) => p.user.id === userId && p.periodo === periodo)
   const paid = own
     .filter((p) => p.status === "APROBADO")
     .reduce((sum, p) => sum + Number(p.amountUsd), 0)
   const inReviewCount = own.filter((p) => p.status === "EN_REVISION").length
   const status =
-    paid >= FEE_USD - 0.05
+    paid >= fee - 0.05
       ? "AL_DIA"
       : paid > 0
         ? "PARCIAL"
@@ -197,9 +203,9 @@ function balance(userId: string, periodo: string): S["PeriodBalanceDto"] {
   return {
     periodo,
     status,
-    feeUsd: FEE_USD.toFixed(2),
+    feeUsd: fee.toFixed(2),
     paidUsd: paid.toFixed(2),
-    balanceUsd: Math.max(0, FEE_USD - paid).toFixed(2),
+    balanceUsd: Math.max(0, fee - paid).toFixed(2),
     inReviewCount,
   }
 }
@@ -246,6 +252,13 @@ export function createHandlers(baseUrl: string) {
   return [
     http.get(u("/health"), () => ok({ status: "ok" })),
 
+    // Solo para las pruebas e2e: simula una instalación nueva, sin cuota.
+    http.post(u("/__test/clear-fee"), () => {
+      monthlyFee = null
+      periodFee = null
+      return ok({ cleared: true })
+    }),
+
     http.post(u("/auth/login"), async ({ request }) => {
       const body = (await request.json()) as { cedula: string; password: string }
       const user = users.find((x) => digits(x.cedula) === digits(body.cedula))
@@ -275,6 +288,7 @@ export function createHandlers(baseUrl: string) {
     http.get(u("/billing/current"), ({ request }) => {
       const g = guard(request)
       if ("response" in g) return g.response
+      if (periodFee === null) return noFee()
       const current = (c: "VES" | "COP") => {
         const r = rates.find((x) => x.currency === c)
         return r
@@ -287,8 +301,8 @@ export function createHandlers(baseUrl: string) {
       }
       return ok({
         periodo: PERIODO,
-        feeUsd: FEE_USD.toFixed(2),
-        fee: inCurrencies(FEE_USD),
+        feeUsd: periodFee.toFixed(2),
+        fee: inCurrencies(periodFee),
         rates: { VES: current("VES"), COP: current("COP") },
       })
     }),
@@ -297,10 +311,13 @@ export function createHandlers(baseUrl: string) {
       const g = guard(request, "ADMIN")
       if ("response" in g) return g.response
       const body = (await request.json()) as { feeUsd: string }
+      monthlyFee = Number(body.feeUsd)
+      // El mes en curso conserva su cuota; solo se fija si es la primera vez.
+      periodFee ??= monthlyFee
       return ok({
         feeUsd: body.feeUsd,
         currentPeriod: PERIODO,
-        currentPeriodFeeUsd: FEE_USD.toFixed(2),
+        currentPeriodFeeUsd: periodFee!.toFixed(2),
       })
     }),
 
@@ -509,6 +526,7 @@ export function createHandlers(baseUrl: string) {
     http.get(u("/me/status"), ({ request }) => {
       const g = guard(request)
       if ("response" in g) return g.response
+      if (periodFee === null) return noFee()
       const current = balance(g.user.id, PERIODO)
       const owed = ["2026-08", "2026-09", PERIODO]
         .map((periodo) => balance(g.user.id, periodo))
@@ -563,6 +581,7 @@ export function createHandlers(baseUrl: string) {
     http.get(u("/metrics/summary"), ({ request }) => {
       const g = guard(request, "ADMIN")
       if ("response" in g) return g.response
+      if (periodFee === null) return noFee()
       const periodo = new URL(request.url).searchParams.get("periodo") ?? PERIODO
       const approved = payments.filter((p) => p.periodo === periodo && p.status === "APROBADO")
       const collected = (c: Currency) => {
@@ -577,11 +596,11 @@ export function createHandlers(baseUrl: string) {
       const students = users.filter((x) => x.active && x.role === "ESTUDIANTE")
       const counts = { AL_DIA: 0, PARCIAL: 0, EN_REVISION: 0, PENDIENTE: 0 }
       for (const s of students) counts[balance(s.id, periodo).status]++
-      const expected = students.length * FEE_USD
+      const expected = students.length * periodFee
       const inReview = payments.filter((p) => p.status === "EN_REVISION")
       return ok({
         periodo,
-        feeUsd: FEE_USD.toFixed(2),
+        feeUsd: periodFee.toFixed(2),
         collected: { USD: collected("USD"), VES: collected("VES"), COP: collected("COP") },
         totalUsd: totalUsd.toFixed(2),
         expectedUsd: expected.toFixed(2),

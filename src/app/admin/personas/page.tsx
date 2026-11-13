@@ -6,9 +6,11 @@ import { Pagination } from "@/components/pagination"
 import { CreateUserDialog } from "@/components/people/create-user-dialog"
 import { PeopleFilters } from "@/components/people/filters"
 import { RoleSelect } from "@/components/people/role-select"
+import { FeeSetupNotice } from "@/components/fee-notice"
 import { ListSkeleton } from "@/components/skeletons"
 import { EstadoBadge } from "@/components/status-badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { currentBilling } from "@/lib/api/billing"
 import { api, call } from "@/lib/api/client"
 import type { UserListItem } from "@/lib/api/types"
 import { formatMoney, formatPeriodo } from "@/lib/format"
@@ -61,6 +63,8 @@ async function PeopleList({
   const page = pageNumber(param(sp.page))
 
   const client = await api()
+  // Filtrar por estado exige la cuota: sin ella, la API responde FEE_NOT_CONFIGURED.
+  if (estado && !(await currentBilling(client))) return <FeeSetupNotice />
   const result = await call(
     client.GET("/users", { params: { query: { q, role, estado, page, pageSize: PAGE_SIZE } } }),
   )

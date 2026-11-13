@@ -2,8 +2,10 @@ import type { Metadata } from "next"
 import { Suspense } from "react"
 import { PageHeader } from "@/components/card"
 import { RegisterPaymentForm } from "@/components/payments/register-payment-form"
+import { FeeSetupNotice } from "@/components/fee-notice"
 import { CardSkeleton } from "@/components/skeletons"
 import type { StudentOption } from "@/lib/actions/users"
+import { currentBilling } from "@/lib/api/billing"
 import { ApiError, api, call } from "@/lib/api/client"
 import { todayIso } from "@/lib/format"
 import { param } from "@/lib/search-params"
@@ -35,7 +37,8 @@ async function NewPayment({
   await requireAdmin()
   const userId = param((await searchParams).userId)
   const client = await api()
-  const billing = await call(client.GET("/billing/current"))
+  const billing = await currentBilling(client)
+  if (!billing) return <FeeSetupNotice />
 
   let initialStudent: StudentOption | undefined
   if (userId) {

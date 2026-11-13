@@ -78,11 +78,11 @@ interface Session {
 
 ### Tres niveles de control de acceso
 
-| Nivel              | Dónde                                | Qué hace                                                                                                                            |
-| ------------------ | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| 1. Proxy           | `src/proxy.ts`                       | Chequeo rápido con la cookie: sin sesión → `/login`; contraseña temporal → `/cambiar-clave`; estudiante en `/admin` → `/mi-cuenta`. |
-| 2. Página / acción | `requireAdmin()`, `requireSession()` | Cada página y cada Server Action vuelve a exigir la sesión y el rol.                                                                |
-| 3. API             | Guards del backend                   | La autorización real. El backend toma el rol de la base de datos, no del token, así que quitar un rol tiene efecto de inmediato.    |
+| Nivel              | Dónde                                                    | Qué hace                                                                                                                                                                      |
+| ------------------ | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Proxy           | `src/proxy.ts`                                           | Chequeo rápido con la cookie: sin sesión → `/login`; contraseña temporal → `/cambiar-clave`; estudiante en `/admin` → `/mi-cuenta`; administrador en `/mi-cuenta` → `/admin`. |
+| 2. Página / acción | `requireAdmin()`, `requireStudent()`, `requireSession()` | Cada página y cada Server Action vuelve a exigir la sesión y el rol.                                                                                                          |
+| 3. API             | Guards del backend                                       | La autorización real. El backend toma el rol de la base de datos, no del token, así que quitar un rol tiene efecto de inmediato.                                              |
 
 El proxy y la página son defensas de UX; **la única que protege los datos es la API**.
 
@@ -90,11 +90,12 @@ El proxy y la página son defensas de UX; **la única que protege los datos es l
 
 Si la API responde **401** (token vencido, contraseña restablecida, etc.), `call()` redirige a `/salir?motivo=expirada`. Esa Route Handler borra la cookie y lleva al login con el aviso "Tu sesión expiró". Hace falta esa ruta porque un Server Component no puede borrar cookies.
 
-| Respuesta de la API            | Qué hace la web                               |
-| ------------------------------ | --------------------------------------------- |
-| 401                            | `/salir?motivo=expirada` → login              |
-| 403 `PASSWORD_CHANGE_REQUIRED` | `/cambiar-clave`                              |
-| 403 `ACCOUNT_DISABLED`         | `/salir?motivo=desactivada` → login con aviso |
+| Respuesta de la API            | Qué hace la web                                                                                       |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| 401                            | `/salir?motivo=expirada` → login                                                                      |
+| 403 `PASSWORD_CHANGE_REQUIRED` | `/cambiar-clave`                                                                                      |
+| 403 `ACCOUNT_DISABLED`         | `/salir?motivo=desactivada` → login con aviso                                                         |
+| 403 `FORBIDDEN`                | `/salir?motivo=permisos` → login: el rol de la cookie quedó viejo; al volver a entrar toma el vigente |
 
 ## Comunicación con la API
 
@@ -139,6 +140,10 @@ export default function Page(props: PageProps<"/admin/personas">) {
 - Las llamadas a la API usan `cache: "no-store"`: los pagos cambian todo el tiempo y no se cachean.
 - `getSession()` llama a `connection()` porque valida la sesión contra la hora actual.
 - Los menús usan `usePathname()` dentro de `<Suspense>`; mientras tanto se muestra una versión estática sin ítem activo.
+
+### Límite de las capturas
+
+Las capturas pasan por una Server Action, y Next limita su cuerpo a 1 MB por defecto. `next.config.ts` lo sube a 4,2 MB (`serverActions.bodySizeLimit`) y la web acepta hasta 4 MB (`MAX_RECEIPT_BYTES`), por debajo de los 4,5 MB que corta Vercel. El backend admite 5 MB. Si se cambia uno de estos valores, hay que revisar los otros.
 
 ## Escritura: Server Actions
 

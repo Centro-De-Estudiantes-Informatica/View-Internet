@@ -27,11 +27,19 @@ La web SHALL redirigir a `/cambiar-clave` a toda sesión con `mustChangePassword
 - **THEN** la web muestra el formulario de nueva contraseña (mínimo 8 caracteres, con confirmación) y, al guardarla, lo lleva a su inicio
 
 ### Requirement: Protección de rutas por rol
-La web SHALL proteger en el servidor las rutas `/admin/**` para el rol `ADMIN` y `/mi-cuenta/**` para cualquier sesión válida. Sin sesión, MUST redirigir al login.
+La web SHALL proteger en el servidor las rutas `/admin/**` para el rol `ADMIN` y `/mi-cuenta/**` para el rol `ESTUDIANTE`. Sin sesión, MUST redirigir al login.
 
 #### Scenario: Estudiante entra a una ruta de administrador
 - **WHEN** un estudiante abre `/admin/personas`
 - **THEN** la web lo redirige a `/mi-cuenta`
+
+#### Scenario: Administrador entra al portal del estudiante
+- **WHEN** un administrador abre `/mi-cuenta`
+- **THEN** la web lo redirige a `/admin`
+
+#### Scenario: Rol cambiado con la sesión abierta
+- **WHEN** la API responde 403 `FORBIDDEN` porque el rol de la sesión quedó desactualizado
+- **THEN** la web borra la cookie y redirige al login con el aviso "Tus permisos cambiaron"
 
 #### Scenario: Sesión vencida
 - **WHEN** la API responde 401 por un token vencido o invalidado
