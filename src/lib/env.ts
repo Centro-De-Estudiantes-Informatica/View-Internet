@@ -4,6 +4,12 @@ const schema = z.object({
   API_BASE_URL: z.url().transform((url) => url.replace(/\/+$/, "")),
   SESSION_SECRET: z.string().min(32, "SESSION_SECRET debe tener al menos 32 caracteres"),
   API_MOCKING: z.enum(["enabled", "disabled"]).default("disabled"),
+  // Secreto compartido con la API para que confíe en la IP del navegador (X-Client-IP).
+  CLIENT_IP_SECRET: z
+    .string()
+    .min(32, "CLIENT_IP_SECRET debe tener al menos 32 caracteres")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
   // Datos de pago móvil de la sede que ve el estudiante al reportar.
   SEDE_PAGO_MOVIL_BANCO: z.string().optional(),
   SEDE_PAGO_MOVIL_TELEFONO: z.string().optional(),

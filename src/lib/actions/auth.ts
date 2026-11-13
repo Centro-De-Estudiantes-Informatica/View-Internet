@@ -5,6 +5,8 @@ import { redirect } from "next/navigation"
 import { z } from "zod"
 import { ApiError, api, call, publicApi } from "@/lib/api/client"
 import type { SessionDto } from "@/lib/api/types"
+import { clientIpHeaders } from "@/lib/client-ip"
+import { env } from "@/lib/env"
 import type { ActionResult } from "@/lib/errors"
 import { clearSession, saveSession } from "@/lib/session"
 import { homeFor } from "@/lib/session-core"
@@ -37,12 +39,11 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
 
   let dto: SessionDto
   try {
-    // El backend limita los intentos por IP: se reenvía la del navegador, no la de este servidor.
-    const forwardedFor = (await headers()).get("x-forwarded-for")
+    // El backend limita los intentos por IP: se manda la del navegador, no la de este servidor.
     dto = await call(
       publicApi().POST("/auth/login", {
         body: { cedula, password },
-        headers: forwardedFor ? { "X-Forwarded-For": forwardedFor } : undefined,
+        headers: clientIpHeaders(await headers(), env().CLIENT_IP_SECRET),
       }),
       { handleAuth: false },
     )

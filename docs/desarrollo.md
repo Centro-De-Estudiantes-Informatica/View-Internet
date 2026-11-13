@@ -100,6 +100,6 @@ Todas las pruebas verifican también que no haya desplazamiento horizontal.
 ## Despliegue (Vercel)
 
 1. Importar el repositorio en Vercel (framework Next.js, sin configuración extra).
-2. Variables de entorno: `API_BASE_URL` (URL pública de la API), `SESSION_SECRET` (distinta en cada entorno) y los `SEDE_PAGO_MOVIL_*`. **No** definir `API_MOCKING` en producción.
-3. En el backend, `TRUST_PROXY` debe ser mayor que 0 para que el límite de intentos por IP use el `X-Forwarded-For` que envía la web.
+2. Variables de entorno: `API_BASE_URL` (URL pública de la API), `SESSION_SECRET` (distinta en cada entorno), `CLIENT_IP_SECRET` y los `SEDE_PAGO_MOVIL_*`. **No** definir `API_MOCKING` en producción.
+3. `CLIENT_IP_SECRET` debe tener el mismo valor en la web y en la API; así el límite de intentos por IP cuenta la IP del navegador.
 4. Probar el flujo completo en la vista previa (login del administrador, registrar un pago, reportar y aprobar un pago móvil) antes de promover a producción.

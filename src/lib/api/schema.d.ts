@@ -706,7 +706,7 @@ export interface components {
             periodo?: string;
             /**
              * Format: binary
-             * @description JPG o PNG, máx. 5 MB
+             * @description JPG o PNG, máx. 4 MB
              */
             receipt?: string;
         };

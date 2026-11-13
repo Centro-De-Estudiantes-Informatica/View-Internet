@@ -1,5 +1,5 @@
 /**
- * Límites de la captura del pago móvil en la web. El backend acepta 5 MB, pero la petición pasa
+ * Límites de la captura del pago móvil en la web. El backend también acepta 4 MB. La petición pasa
  * por el servidor de Next: Vercel corta en 4,5 MB, y `serverActions.bodySizeLimit` en
  * `next.config.ts` debe quedar por encima de este valor (con margen para el multipart).
  */
