@@ -118,7 +118,7 @@ Las rutas, parámetros y respuestas están tipados desde el OpenAPI del backend:
 - **Fechas**: `AAAA-MM-DD`; periodos: `AAAA-MM`. "Hoy" se calcula en hora de Venezuela (`todayIso()`).
 - **Bancos**: código SUDEBAN de 4 dígitos (`0134`); `src/lib/banks.ts` traduce código ↔ nombre.
 - **Errores**: `{ code, message }`. `src/lib/errors.ts` traduce cada `code` a un mensaje en español.
-- **IP del usuario**: el login reenvía `X-Forwarded-For` para que el límite de intentos por IP del backend cuente la IP del navegador y no la del servidor de la web.
+- **IP del usuario**: el login manda la IP del navegador en `X-Client-IP` junto con `X-Client-IP-Secret` (`CLIENT_IP_SECRET`, el mismo valor en la web y en la API), para que el límite de intentos por IP del backend cuente la IP del navegador y no la del servidor de la web. Vercel sobrescribe `X-Forwarded-For`, por eso no basta con reenviarlo.
 
 ## Lectura de datos y caché
 
@@ -143,7 +143,7 @@ export default function Page(props: PageProps<"/admin/personas">) {
 
 ### Límite de las capturas
 
-Las capturas pasan por una Server Action, y Next limita su cuerpo a 1 MB por defecto. `next.config.ts` lo sube a 4,2 MB (`serverActions.bodySizeLimit`) y la web acepta hasta 4 MB (`MAX_RECEIPT_BYTES`), por debajo de los 4,5 MB que corta Vercel. El backend admite 5 MB. Si se cambia uno de estos valores, hay que revisar los otros.
+Las capturas pasan por una Server Action, y Next limita su cuerpo a 1 MB por defecto. `next.config.ts` lo sube a 4,2 MB (`serverActions.bodySizeLimit`) y la web acepta hasta 4 MB (`MAX_RECEIPT_BYTES`), por debajo de los 4,5 MB que corta Vercel. El backend también admite 4 MB. Si se cambia uno de estos valores, hay que revisar los otros.
 
 ## Escritura: Server Actions
 
