@@ -10,10 +10,6 @@ const schema = z.object({
     .min(32, "CLIENT_IP_SECRET debe tener al menos 32 caracteres")
     .optional()
     .or(z.literal("").transform(() => undefined)),
-  // Datos de pago móvil de la sede que ve el estudiante al reportar.
-  SEDE_PAGO_MOVIL_BANCO: z.string().optional(),
-  SEDE_PAGO_MOVIL_TELEFONO: z.string().optional(),
-  SEDE_PAGO_MOVIL_DOCUMENTO: z.string().optional(),
 })
 
 export type Env = z.infer<typeof schema>

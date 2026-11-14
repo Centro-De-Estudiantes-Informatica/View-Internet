@@ -4,9 +4,9 @@ import Link from "next/link"
 import { Suspense } from "react"
 import { FeePendingNotice } from "@/components/fee-notice"
 import { CardSkeleton } from "@/components/skeletons"
-import { currentBilling } from "@/lib/api/billing"
+import { currentBilling, paymentDestination } from "@/lib/api/billing"
 import { api, call } from "@/lib/api/client"
-import { env } from "@/lib/env"
+import { bankName } from "@/lib/banks"
 import { formatAmountInput, formatDate, formatMoney, formatRate, todayIso } from "@/lib/format"
 import { requireStudent } from "@/lib/session"
 import { ReportForm } from "./report-form"
@@ -33,7 +33,7 @@ export default function ReportPage() {
   )
 }
 
-function Datum({ label, value, mono }: { label: string; value?: string; mono?: boolean }) {
+function Datum({ label, value, mono }: { label: string; value?: string | null; mono?: boolean }) {
   return (
     <div className="flex flex-col gap-0.5">
       <dt className="text-xs text-muted-foreground">{label}</dt>
@@ -49,8 +49,10 @@ async function Report() {
   const client = await api()
   const billing = await currentBilling(client)
   if (!billing) return <FeePendingNotice />
-  const status = await call(client.GET("/me/status"))
-  const config = env()
+  const [status, destination] = await Promise.all([
+    call(client.GET("/me/status")),
+    paymentDestination(client),
+  ])
   const rate = billing.rates.VES
   // Sugerir lo que falta del mes más antiguo adeudado; si no, la cuota.
   const owed = status.owedPeriods[0]
@@ -67,9 +69,9 @@ async function Report() {
           Paga a la sede con estos datos
         </h2>
         <dl className="grid grid-cols-2 gap-x-3 gap-y-2.5">
-          <Datum label="Banco" value={config.SEDE_PAGO_MOVIL_BANCO} />
-          <Datum label="Teléfono" value={config.SEDE_PAGO_MOVIL_TELEFONO} mono />
-          <Datum label="Cédula / RIF" value={config.SEDE_PAGO_MOVIL_DOCUMENTO} mono />
+          <Datum label="Banco" value={destination.bank && bankName(destination.bank)} />
+          <Datum label="Teléfono" value={destination.phone} mono />
+          <Datum label="Cédula / RIF" value={destination.document} mono />
           <div className="flex flex-col gap-0.5">
             <dt className="text-xs text-muted-foreground">Monto hoy</dt>
             <dd className="tabular text-sm text-primary">
