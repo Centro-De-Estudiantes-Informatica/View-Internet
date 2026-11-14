@@ -34,7 +34,7 @@ Solo para el rol `ESTUDIANTE`: un administrador que abra estas rutas va a `/admi
 | `/mi-cuenta`          | Nombre y cédula; tarjeta de estado (al día, en revisión o lo que debe, con el monto en $, Bs y COP); botón para reportar pago móvil; historial de pagos. | `GET /me/status`, `GET /me/payments`                                 |
 | `/mi-cuenta/reportar` | Datos de pago móvil de la sede y monto de hoy en Bs; formulario con referencia, banco, monto, teléfono, fecha y captura opcional.                        | `GET /billing/current`, `GET /me/status`, `POST /me/payments/mobile` |
 
-Los datos de pago móvil de la sede (banco, teléfono, cédula/RIF) salen de las variables `SEDE_PAGO_MOVIL_*`; si faltan, se muestra "Por configurar".
+Los datos de pago móvil de la sede (banco, teléfono, cédula/RIF) los carga el administrador en "Cuota y tasas" (`GET/PUT /billing/payment-destination`); si faltan, se muestra "Por configurar".
 
 ## Estados que se muestran
 

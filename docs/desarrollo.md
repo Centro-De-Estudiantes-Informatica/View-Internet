@@ -22,9 +22,6 @@ La web corre en el puerto **3001** porque la API usa el 3000.
 | `API_BASE_URL`              | Sí          | URL de la API sin barra final, p. ej. `http://localhost:3000`                                                                         |
 | `SESSION_SECRET`            | Sí          | Clave de al menos 32 caracteres para cifrar la cookie. Genera una con `openssl rand -base64 32`. Cambiarla cierra todas las sesiones. |
 | `API_MOCKING`               | No          | `enabled` activa la API simulada en `/api/mock`                                                                                       |
-| `SEDE_PAGO_MOVIL_BANCO`     | No          | Banco de la sede para el pago móvil                                                                                                   |
-| `SEDE_PAGO_MOVIL_TELEFONO`  | No          | Teléfono de la sede para el pago móvil                                                                                                |
-| `SEDE_PAGO_MOVIL_DOCUMENTO` | No          | Cédula o RIF de la sede                                                                                                               |
 
 Se validan al arrancar (`src/instrumentation.ts`): si falta alguna obligatoria, el servidor no inicia y dice cuál.
 
@@ -100,6 +97,6 @@ Todas las pruebas verifican también que no haya desplazamiento horizontal.
 ## Despliegue (Vercel)
 
 1. Importar el repositorio en Vercel (framework Next.js, sin configuración extra).
-2. Variables de entorno: `API_BASE_URL` (URL pública de la API), `SESSION_SECRET` (distinta en cada entorno), `CLIENT_IP_SECRET` y los `SEDE_PAGO_MOVIL_*`. **No** definir `API_MOCKING` en producción.
+2. Variables de entorno: `API_BASE_URL` (URL pública de la API), `SESSION_SECRET` (distinta en cada entorno) y `CLIENT_IP_SECRET`. Los datos de pago móvil de la sede se cargan desde la app ("Cuota y tasas"). **No** definir `API_MOCKING` en producción.
 3. `CLIENT_IP_SECRET` debe tener el mismo valor en la web y en la API; así el límite de intentos por IP cuenta la IP del navegador.
 4. Probar el flujo completo en la vista previa (login del administrador, registrar un pago, reportar y aprobar un pago móvil) antes de promover a producción.

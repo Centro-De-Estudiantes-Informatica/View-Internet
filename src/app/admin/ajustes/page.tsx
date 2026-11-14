@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 import { PageHeader, Panel, PanelTitle } from "@/components/card"
-import { FeeForm, RateForm } from "@/components/settings-forms"
+import { FeeForm, PaymentDestinationForm, RateForm } from "@/components/settings-forms"
 import { CardSkeleton } from "@/components/skeletons"
-import { currentBilling } from "@/lib/api/billing"
+import { currentBilling, paymentDestination } from "@/lib/api/billing"
 import { api, call } from "@/lib/api/client"
 import type { Rate } from "@/lib/api/types"
 import { formatDate, formatMoney, formatPeriodo, formatRate, todayIso } from "@/lib/format"
@@ -16,7 +16,7 @@ export default function SettingsPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Cuota y tasas"
-        description="La cuota se cobra en dólares; las tasas convierten los pagos en bolívares y pesos."
+        description="La cuota se cobra en dólares; las tasas convierten los pagos en bolívares y pesos. Los datos de pago móvil son los que ven los estudiantes al reportar."
       />
       <Suspense fallback={<CardSkeleton />}>
         <Settings />
@@ -54,8 +54,9 @@ function RateHistory({ rates, currency }: { rates: Rate[]; currency: "VES" | "CO
 async function Settings() {
   await requireAdmin()
   const client = await api()
-  const [billing, ves, cop] = await Promise.all([
+  const [billing, destination, ves, cop] = await Promise.all([
     currentBilling(client),
+    paymentDestination(client),
     call(client.GET("/billing/rates", { params: { query: { currency: "VES", limit: 7 } } })),
     call(client.GET("/billing/rates", { params: { query: { currency: "COP", limit: 7 } } })),
   ])
@@ -75,6 +76,19 @@ async function Settings() {
           Cuota mensual
         </PanelTitle>
         <FeeForm currentFee={billing ? Number(billing.feeUsd).toFixed(2) : ""} />
+      </Panel>
+      <Panel aria-labelledby="dest-t">
+        <PanelTitle
+          id="dest-t"
+          aside={
+            destination.configured ? undefined : (
+              <span className="font-medium text-partial">Por configurar</span>
+            )
+          }
+        >
+          Pago móvil de la sede
+        </PanelTitle>
+        <PaymentDestinationForm current={destination} />
       </Panel>
       <div className="flex flex-wrap gap-4">
         {(["VES", "COP"] as const).map((currency) => {

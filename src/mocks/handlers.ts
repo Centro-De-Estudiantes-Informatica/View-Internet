@@ -17,6 +17,11 @@ const PERIODO = "2026-10"
 /** Cuota vigente y cuota congelada del mes en curso; `null` = instalación nueva. */
 let monthlyFee: number | null = 5
 let periodFee: number | null = 5
+let destination: { bank: string; phone: string; document: string } | null = {
+  bank: "0134",
+  phone: "04141234567",
+  document: "J-123456789",
+}
 
 interface MockUser {
   id: string
@@ -319,6 +324,26 @@ export function createHandlers(baseUrl: string) {
         currentPeriod: PERIODO,
         currentPeriodFeeUsd: periodFee!.toFixed(2),
       })
+    }),
+
+    http.get(u("/billing/payment-destination"), ({ request }) => {
+      const g = guard(request)
+      if ("response" in g) return g.response
+      return ok({
+        bank: destination?.bank ?? null,
+        phone: destination?.phone ?? null,
+        document: destination?.document ?? null,
+        configured: destination !== null,
+      })
+    }),
+
+    http.put(u("/billing/payment-destination"), async ({ request }) => {
+      const g = guard(request, "ADMIN")
+      if ("response" in g) return g.response
+      const body = (await request.json()) as { bank: string; phone: string; document: string }
+      const doc = body.document.replace(/[\s\-.]/g, "").toUpperCase()
+      destination = { bank: body.bank, phone: body.phone, document: `${doc[0]}-${doc.slice(1)}` }
+      return ok({ ...destination, configured: true })
     }),
 
     http.get(u("/billing/rates"), ({ request }) => {

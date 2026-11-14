@@ -100,6 +100,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/billing/payment-destination": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Datos del pago móvil de la sede (a dónde pagan los estudiantes) */
+        get: operations["BillingController_paymentDestination"];
+        /** Cambiar los datos del pago móvil de la sede */
+        put: operations["BillingController_setPaymentDestination"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/billing/rates": {
         parameters: {
             query?: never;
@@ -479,6 +497,30 @@ export interface components {
              * @example 5.00
              */
             currentPeriodFeeUsd: string;
+        };
+        PaymentDestinationDto: {
+            /** @example 0134 */
+            bank: string | null;
+            /** @example 04141234567 */
+            phone: string | null;
+            /** @example J-123456789 */
+            document: string | null;
+            /** @description false si la sede todavía no cargó sus datos */
+            configured: boolean;
+        };
+        SetPaymentDestinationDto: {
+            /**
+             * @description Código SUDEBAN de 4 dígitos del banco
+             * @example 0134
+             */
+            bank: string;
+            /** @example 04141234567 */
+            phone: string;
+            /**
+             * @description Cédula o RIF (V, E, J, G o P)
+             * @example J-123456789
+             */
+            document: string;
         };
         SetRateDto: {
             /** @enum {string} */
@@ -916,6 +958,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FeeDto"];
+                };
+            };
+            /** @description Requiere rol ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_paymentDestination: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentDestinationDto"];
+                };
+            };
+        };
+    };
+    BillingController_setPaymentDestination: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetPaymentDestinationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentDestinationDto"];
                 };
             };
             /** @description Requiere rol ADMIN */
