@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test"
 
-const PORT = 3001
+// `E2E_PORT` permite correr las pruebas sin chocar con un servidor ya abierto en el 3001.
+const PORT = Number(process.env.E2E_PORT ?? 3001)
 const baseURL = `http://localhost:${PORT}`
 
 // Las pruebas usan la API simulada (src/mocks), cuyo estado vive en memoria:
@@ -20,10 +21,13 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev",
+    // En CI se prueba el build de producción (más estable y más parecido a lo que se publica).
+    command: process.env.CI
+      ? `npm run build && npx next start -p ${PORT}`
+      : `npx next dev -p ${PORT}`,
     url: `${baseURL}/login`,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 300_000,
     env: {
       API_MOCKING: "enabled",
       API_BASE_URL: `${baseURL}/api/mock`,
