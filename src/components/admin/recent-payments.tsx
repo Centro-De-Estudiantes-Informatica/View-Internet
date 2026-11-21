@@ -37,7 +37,8 @@ export function RecentPayments({ payments }: { payments: RecentPayment[] }) {
                   {p.user.fullName}
                 </Link>
                 <span className="tabular text-xs text-muted-foreground">
-                  {p.user.cedula} · {METHOD_LABELS[p.method]}
+                  {p.user.cedula ? `${p.user.cedula} · ` : ""}
+                  {METHOD_LABELS[p.method]}
                 </span>
               </div>
               <span className="tabular text-sm whitespace-nowrap text-foreground">

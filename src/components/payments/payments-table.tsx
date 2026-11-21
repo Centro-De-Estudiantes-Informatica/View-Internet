@@ -78,7 +78,9 @@ export function PaymentsTable({
                       >
                         {p.user.fullName}
                       </Link>
-                      <span className="tabular text-xs text-muted-foreground">{p.user.cedula}</span>
+                      {p.user.cedula && (
+                        <span className="tabular text-xs text-muted-foreground">{p.user.cedula}</span>
+                      )}
                     </div>
                   </td>
                 )}

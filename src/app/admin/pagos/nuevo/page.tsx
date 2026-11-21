@@ -46,7 +46,7 @@ async function NewPayment({
       const user = await call(client.GET("/users/{id}", { params: { path: { id: userId } } }))
       const listing = await call(
         client.GET("/users", {
-          params: { query: { q: user.cedula.replace(/\D/g, ""), pageSize: 5 } },
+          params: { query: { q: user.cedula.replace(/\D/g, "") || user.fullName, pageSize: 5 } },
         }),
       )
       const status = listing.items.find((u) => u.id === user.id)?.period?.status ?? null

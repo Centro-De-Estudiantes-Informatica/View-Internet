@@ -31,8 +31,14 @@ function CreateUserForm({ onDone }: { onDone: () => void }) {
         <DialogHeader>
           <DialogTitle>{state.data.user.fullName} fue registrado</DialogTitle>
           <DialogDescription>
-            Cédula <span className="tabular">{state.data.user.cedula}</span>. Ya puede iniciar
-            sesión.
+            {state.data.user.cedula ? (
+              <>
+                Cédula <span className="tabular">{state.data.user.cedula}</span>. Ya puede iniciar
+                sesión.
+              </>
+            ) : (
+              "Ya quedó registrado para asignarle pagos."
+            )}
           </DialogDescription>
         </DialogHeader>
         <TemporaryPassword value={state.data.temporaryPassword} />
@@ -65,13 +71,25 @@ function CreateUserForm({ onDone }: { onDone: () => void }) {
         </DialogDescription>
       </DialogHeader>
       {failed && !failed.fields && <FormError message={failed.message} />}
-      <Field id="cedula" label="Cédula" error={error("cedula")}>
+      <Field id="fullName" label="Nombre completo" error={error("fullName")}>
+        <Input
+          id="fullName"
+          name="fullName"
+          defaultValue={values.fullName}
+          placeholder="Ej. Daniel Escalante"
+          autoComplete="off"
+          required
+          aria-invalid={!!error("fullName")}
+          aria-describedby={described("fullName")}
+          className={fieldClass}
+        />
+      </Field>
+      <Field id="cedula" label="Cédula (opcional)" error={error("cedula")}>
         <Input
           id="cedula"
           name="cedula"
           defaultValue={values.cedula}
           placeholder="V-28.123.456"
-          required
           aria-invalid={!!error("cedula")}
           aria-describedby={described("cedula")}
           className={`${fieldClass} tabular`}
@@ -85,18 +103,6 @@ function CreateUserForm({ onDone }: { onDone: () => void }) {
           Ver a la persona con esta cédula
         </Link>
       )}
-      <Field id="fullName" label="Nombre completo" error={error("fullName")}>
-        <Input
-          id="fullName"
-          name="fullName"
-          defaultValue={values.fullName}
-          autoComplete="off"
-          required
-          aria-invalid={!!error("fullName")}
-          aria-describedby={described("fullName")}
-          className={fieldClass}
-        />
-      </Field>
       <div className="flex flex-wrap gap-4">
         <Field
           id="phone"

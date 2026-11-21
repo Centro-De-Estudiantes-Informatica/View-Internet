@@ -24,9 +24,10 @@ async function createUserImpl(formData: FormData): Promise<ActionResult<CreatedU
   const role = (text(formData, "role") || "ESTUDIANTE") as UserRole
 
   const fields: Record<string, string> = {}
-  if (!/^[VvEe]?[\s.-]*\d[\d.\s]{4,}$/.test(cedula))
+  if (cedula && !/^[VvEe]?[\s.-]*\d[\d.\s]{4,}$/.test(cedula))
     fields.cedula = "Escribe una cédula válida, p. ej. V-28.123.456"
-  if (fullName.length < 3) fields.fullName = "Escribe el nombre completo"
+  if (fullName.split(" ").filter(Boolean).length < 2 || fullName.length < 3)
+    fields.fullName = "Escribe el nombre y el apellido"
   if (phone && !/^0\d{10}$/.test(phone)) fields.phone = "Escribe un teléfono como 0414-1234567"
   if (!["ESTUDIANTE", "ADMIN"].includes(role)) fields.role = "Elige el rol"
   if (Object.keys(fields).length) return invalid(fields)
@@ -34,7 +35,9 @@ async function createUserImpl(formData: FormData): Promise<ActionResult<CreatedU
   try {
     const client = await api()
     const data = await call(
-      client.POST("/users", { body: { cedula, fullName, phone: phone || undefined, role } }),
+      client.POST("/users", {
+        body: { cedula: cedula || "", fullName, phone: phone || undefined, role },
+      }),
     )
     refresh()
     return { ok: true, data, message: `${data.user.fullName} fue registrado` }

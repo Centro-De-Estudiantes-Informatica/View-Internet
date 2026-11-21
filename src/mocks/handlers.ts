@@ -43,6 +43,9 @@ const users: MockUser[] = [
   ["u6", "V-27.410.902", "Luis Méndez", "ADMIN"],
   ["u7", "V-31.220.457", "Valentina Ríos", "ESTUDIANTE"],
   ["u8", "V-26.993.004", "Andrés Peña", "ESTUDIANTE"],
+  ["u9", "", "Daniel Escalante", "ESTUDIANTE"],
+  ["u10", "", "Deinys Gómez", "ESTUDIANTE"],
+  ["u11", "", "Diego Sanabria", "ESTUDIANTE"],
 ].map(([id, cedula, fullName, role]) => ({
   id: id!,
   cedula: cedula!,
@@ -141,6 +144,8 @@ const payments: S["PaymentDto"][] = [
   payment("u6", PERIODO, "USD", 5, "APROBADO"),
   payment("u1", PERIODO, "VES", 1000, "EN_REVISION", mobile("004512", "0134")),
   payment("u7", PERIODO, "VES", 1000, "EN_REVISION", mobile("773201", "0102")),
+  payment("u10", PERIODO, "COP", 3000, "APROBADO"),
+  payment("u11", PERIODO, "COP", 3000, "APROBADO"),
 ]
 
 const history: Record<string, number> = {
@@ -266,7 +271,8 @@ export function createHandlers(baseUrl: string) {
 
     http.post(u("/auth/login"), async ({ request }) => {
       const body = (await request.json()) as { cedula: string; password: string }
-      const user = users.find((x) => digits(x.cedula) === digits(body.cedula))
+      const d = digits(body.cedula)
+      const user = d.length > 0 ? users.find((x) => digits(x.cedula) === d) : undefined
       if (!user || body.password !== PASSWORD) {
         return fail(401, "INVALID_CREDENTIALS", "Credenciales inválidas")
       }
@@ -402,20 +408,29 @@ export function createHandlers(baseUrl: string) {
       const g = guard(request, "ADMIN")
       if ("response" in g) return g.response
       const body = (await request.json()) as {
-        cedula: string
+        cedula?: string
         fullName: string
         phone?: string
         role?: MockUser["role"]
       }
-      const d = digits(body.cedula)
-      if (d.length < 5) return fail(422, "INVALID_CEDULA", "Cédula inválida")
-      if (users.some((x) => digits(x.cedula) === d))
-        return fail(409, "CEDULA_TAKEN", "Cédula registrada")
-      const prefix = /^\s*e/i.test(body.cedula) ? "E" : "V"
+      const fullName = body.fullName?.trim().replace(/\s+/g, " ") ?? ""
+      if (fullName.split(" ").filter(Boolean).length < 2 || fullName.length < 3) {
+        return fail(422, "VALIDATION_ERROR", "Escribe el nombre y el apellido")
+      }
+      const rawCedula = body.cedula?.trim() ?? ""
+      let formattedCedula = ""
+      if (rawCedula) {
+        const d = digits(rawCedula)
+        if (d.length < 5) return fail(422, "INVALID_CEDULA", "Cédula inválida")
+        if (users.some((x) => x.cedula && digits(x.cedula) === d))
+          return fail(409, "CEDULA_TAKEN", "Cédula registrada")
+        const prefix = /^\s*e/i.test(rawCedula) ? "E" : "V"
+        formattedCedula = `${prefix}-${d.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`
+      }
       const user: MockUser = {
         id: id("u"),
-        cedula: `${prefix}-${d.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`,
-        fullName: body.fullName.trim(),
+        cedula: formattedCedula,
+        fullName,
         phone: body.phone ?? null,
         role: body.role ?? "ESTUDIANTE",
         active: true,

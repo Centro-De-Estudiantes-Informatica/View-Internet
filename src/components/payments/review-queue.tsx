@@ -69,7 +69,9 @@ export function ReviewQueue({ payments, total }: { payments: Payment[]; total: n
                       >
                         {p.user.fullName}
                       </Link>
-                      <span className="tabular text-xs text-muted-foreground">{p.user.cedula}</span>
+                      {p.user.cedula && (
+                        <span className="tabular text-xs text-muted-foreground">{p.user.cedula}</span>
+                      )}
                     </div>
                   </td>
                   <td className="px-3 py-3 text-foreground/85">{formatPeriodo(p.periodo)}</td>

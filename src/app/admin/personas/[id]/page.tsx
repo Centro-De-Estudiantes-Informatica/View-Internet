@@ -43,7 +43,7 @@ async function Person({ params }: { params: PageProps<"/admin/personas/[id]">["p
   const [listing, payments] = await Promise.all([
     call(
       client.GET("/users", {
-        params: { query: { q: user.cedula.replace(/\D/g, ""), pageSize: 5 } },
+        params: { query: { q: user.cedula.replace(/\D/g, "") || user.fullName, pageSize: 5 } },
       }),
     ),
     call(client.GET("/payments", { params: { query: { userId: id, pageSize: 100 } } })),
@@ -57,7 +57,7 @@ async function Person({ params }: { params: PageProps<"/admin/personas/[id]">["p
         <div className="flex flex-col gap-1">
           <h1 className="text-[28px] font-semibold">{user.fullName}</h1>
           <p className="tabular text-sm text-muted-foreground">
-            {user.cedula}
+            {user.cedula || "Sin cédula"}
             {user.phone && ` · ${user.phone}`} ·{" "}
             {user.role === "ADMIN" ? "Administrador" : "Estudiante"}
             {!user.active && " · Cuenta desactivada"}

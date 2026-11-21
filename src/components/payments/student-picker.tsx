@@ -34,7 +34,9 @@ export function StudentPicker({ initial, error }: { initial?: StudentOption; err
           <span id="student" className="truncate text-[15px] text-foreground">
             {selected.fullName}
           </span>
-          <span className="tabular text-xs text-muted-foreground">{selected.cedula}</span>
+          {selected.cedula && (
+            <span className="tabular text-xs text-muted-foreground">{selected.cedula}</span>
+          )}
         </span>
         {selected.status && (
           <EstadoBadge status={selected.status as PeriodStatus} showIcon={false} />
@@ -101,7 +103,9 @@ export function StudentPicker({ initial, error }: { initial?: StudentOption; err
                 >
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate text-[15px] text-foreground">{s.fullName}</span>
-                    <span className="tabular text-xs text-muted-foreground">{s.cedula}</span>
+                    {s.cedula && (
+                      <span className="tabular text-xs text-muted-foreground">{s.cedula}</span>
+                    )}
                   </span>
                   {s.status && <EstadoBadge status={s.status as PeriodStatus} showIcon={false} />}
                 </button>

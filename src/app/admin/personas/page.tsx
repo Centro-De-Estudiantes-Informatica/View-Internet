@@ -116,7 +116,7 @@ async function PeopleList({
             {result.items.map((user) => (
               <tr key={user.id} className="border-b last:border-b-0">
                 <td className="tabular px-5 py-3 text-sm whitespace-nowrap text-foreground">
-                  {user.cedula}
+                  {user.cedula || <span className="text-muted-foreground">Sin cédula</span>}
                 </td>
                 <td className="px-3 py-3">
                   <div className="flex flex-col">
@@ -168,7 +168,9 @@ async function PeopleList({
                 >
                   {user.fullName}
                 </Link>
-                <span className="tabular text-[13px] text-muted-foreground">{user.cedula}</span>
+                {user.cedula && (
+                  <span className="tabular text-[13px] text-muted-foreground">{user.cedula}</span>
+                )}
               </div>
               {user.period && <EstadoBadge status={user.period.status} showIcon={false} />}
             </div>
