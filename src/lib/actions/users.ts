@@ -18,14 +18,19 @@ export async function createUser(
 
 async function createUserImpl(formData: FormData): Promise<ActionResult<CreatedUser>> {
   await requireAdmin()
-  const cedula = text(formData, "cedula")
   const fullName = text(formData, "fullName").replace(/\s+/g, " ")
   const phone = text(formData, "phone").replace(/[\s-]/g, "")
   const role = (text(formData, "role") || "ESTUDIANTE") as UserRole
+  const cedula = role === "ADMIN" ? text(formData, "cedula") : ""
 
   const fields: Record<string, string> = {}
-  if (cedula && !/^[VvEe]?[\s.-]*\d[\d.\s]{4,}$/.test(cedula))
-    fields.cedula = "Escribe una cédula válida, p. ej. V-28.123.456"
+  if (role === "ADMIN") {
+    if (!cedula) {
+      fields.cedula = "Escribe la cédula del administrador"
+    } else if (!/^[VvEe]?[\s.-]*\d[\d.\s]{4,}$/.test(cedula)) {
+      fields.cedula = "Escribe una cédula válida, p. ej. V-28.123.456"
+    }
+  }
   if (fullName.split(" ").filter(Boolean).length < 2 || fullName.length < 3)
     fields.fullName = "Escribe el nombre y el apellido"
   if (phone && !/^0\d{10}$/.test(phone)) fields.phone = "Escribe un teléfono como 0414-1234567"

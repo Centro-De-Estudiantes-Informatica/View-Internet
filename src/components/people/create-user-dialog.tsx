@@ -61,6 +61,9 @@ function CreateUserForm({ onDone }: { onDone: () => void }) {
   const error = (name: string) => failed?.fields?.[name]
   const described = (name: string) => (error(name) ? `${name}-error` : undefined)
   const values = failed?.values ?? {}
+  const [role, setRole] = useState<"ESTUDIANTE" | "ADMIN">(
+    values.role === "ADMIN" ? "ADMIN" : "ESTUDIANTE",
+  )
 
   return (
     <form key={JSON.stringify(values)} action={action} className="flex flex-col gap-4" noValidate>
@@ -84,24 +87,29 @@ function CreateUserForm({ onDone }: { onDone: () => void }) {
           className={fieldClass}
         />
       </Field>
-      <Field id="cedula" label="Cédula (opcional)" error={error("cedula")}>
-        <Input
-          id="cedula"
-          name="cedula"
-          defaultValue={values.cedula}
-          placeholder="V-28.123.456"
-          aria-invalid={!!error("cedula")}
-          aria-describedby={described("cedula")}
-          className={`${fieldClass} tabular`}
-        />
-      </Field>
-      {failed?.code === "CEDULA_TAKEN" && (
-        <Link
-          href={`/admin/personas?q=${encodeURIComponent(values.cedula ?? "")}`}
-          className="-mt-2 text-[13px] text-primary hover:underline"
-        >
-          Ver a la persona con esta cédula
-        </Link>
+      {role === "ADMIN" && (
+        <>
+          <Field id="cedula" label="Cédula" error={error("cedula")}>
+            <Input
+              id="cedula"
+              name="cedula"
+              defaultValue={values.cedula}
+              placeholder="V-28.123.456"
+              required
+              aria-invalid={!!error("cedula")}
+              aria-describedby={described("cedula")}
+              className={`${fieldClass} tabular`}
+            />
+          </Field>
+          {failed?.code === "CEDULA_TAKEN" && (
+            <Link
+              href={`/admin/personas?q=${encodeURIComponent(values.cedula ?? "")}`}
+              className="-mt-2 text-[13px] text-primary hover:underline"
+            >
+              Ver a la persona con esta cédula
+            </Link>
+          )}
+        </>
       )}
       <div className="flex flex-wrap gap-4">
         <Field
@@ -125,7 +133,8 @@ function CreateUserForm({ onDone }: { onDone: () => void }) {
           <select
             id="role"
             name="role"
-            defaultValue={values.role ?? "ESTUDIANTE"}
+            value={role}
+            onChange={(e) => setRole(e.target.value as "ESTUDIANTE" | "ADMIN")}
             className="h-12 rounded-[10px] border border-field-border bg-field px-3 text-[15px]"
           >
             <option value="ESTUDIANTE">Estudiante</option>

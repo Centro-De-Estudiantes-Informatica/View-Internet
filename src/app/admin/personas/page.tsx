@@ -96,9 +96,6 @@ async function PeopleList({
           <thead>
             <tr className="text-left text-[13px] text-muted-foreground">
               <th scope="col" className="border-b border-input px-5 py-3 font-medium">
-                Cédula
-              </th>
-              <th scope="col" className="border-b border-input px-3 py-3 font-medium">
                 Nombre
               </th>
               <th scope="col" className="border-b border-input px-3 py-3 font-medium">
@@ -115,10 +112,7 @@ async function PeopleList({
           <tbody>
             {result.items.map((user) => (
               <tr key={user.id} className="border-b last:border-b-0">
-                <td className="tabular px-5 py-3 text-sm whitespace-nowrap text-foreground">
-                  {user.cedula || <span className="text-muted-foreground">Sin cédula</span>}
-                </td>
-                <td className="px-3 py-3">
+                <td className="px-5 py-3">
                   <div className="flex flex-col">
                     <Link
                       href={`/admin/personas/${user.id}`}

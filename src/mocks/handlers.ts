@@ -144,8 +144,8 @@ const payments: S["PaymentDto"][] = [
   payment("u6", PERIODO, "USD", 5, "APROBADO"),
   payment("u1", PERIODO, "VES", 1000, "EN_REVISION", mobile("004512", "0134")),
   payment("u7", PERIODO, "VES", 1000, "EN_REVISION", mobile("773201", "0102")),
-  payment("u10", PERIODO, "COP", 3000, "APROBADO"),
-  payment("u11", PERIODO, "COP", 3000, "APROBADO"),
+  payment("u10", PERIODO, "USD", 1, "APROBADO"),
+  payment("u11", PERIODO, "USD", 1, "APROBADO"),
 ]
 
 const history: Record<string, number> = {
@@ -417,9 +417,10 @@ export function createHandlers(baseUrl: string) {
       if (fullName.split(" ").filter(Boolean).length < 2 || fullName.length < 3) {
         return fail(422, "VALIDATION_ERROR", "Escribe el nombre y el apellido")
       }
-      const rawCedula = body.cedula?.trim() ?? ""
+      const role = body.role ?? "ESTUDIANTE"
+      const rawCedula = role === "ADMIN" ? (body.cedula?.trim() ?? "") : ""
       let formattedCedula = ""
-      if (rawCedula) {
+      if (role === "ADMIN") {
         const d = digits(rawCedula)
         if (d.length < 5) return fail(422, "INVALID_CEDULA", "Cédula inválida")
         if (users.some((x) => x.cedula && digits(x.cedula) === d))
@@ -432,7 +433,7 @@ export function createHandlers(baseUrl: string) {
         cedula: formattedCedula,
         fullName,
         phone: body.phone ?? null,
-        role: body.role ?? "ESTUDIANTE",
+        role,
         active: true,
         mustChangePassword: true,
         createdAt: new Date().toISOString(),
