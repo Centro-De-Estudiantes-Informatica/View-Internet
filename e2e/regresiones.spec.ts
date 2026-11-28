@@ -107,12 +107,19 @@ test("una captura de más de 1 MB se envía sin romper el formulario", async ({ 
 test("una captura que no entra en el límite se rechaza antes de enviar", async ({ page }) => {
   await loginAsStudent(page)
   await page.goto("/mi-cuenta/reportar")
-  await page.locator("#receipt").setInputFiles({
+  const enorme = {
     name: "enorme.jpg",
     mimeType: "image/jpeg",
     buffer: randomBytes(4 * 1024 * 1024 + 1),
-  })
-  await expect(page.getByText("La captura debe ser JPG o PNG de máximo 4 MB")).toBeVisible()
+  }
+  // En el build de producción el HTML llega antes de que React hidrate el formulario: un archivo
+  // adjuntado en ese intervalo no dispara el manejador. Se vuelve a adjuntar hasta que responda.
+  await expect(async () => {
+    await page.locator("#receipt").setInputFiles(enorme)
+    await expect(page.getByText("La captura debe ser JPG o PNG de máximo 4 MB")).toBeVisible({
+      timeout: 2000,
+    })
+  }).toPass({ timeout: 20_000 })
 })
 
 test("los diálogos de la cuenta se cierran y dejan ver la contraseña temporal", async ({

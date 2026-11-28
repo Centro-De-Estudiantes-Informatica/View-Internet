@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Un push nuevo cancela la corrida anterior de la misma rama.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  # Variables mínimas para compilar y probar con la API simulada (no son secretos).
+  API_MOCKING: enabled
+  API_BASE_URL: http://localhost:3001/api/mock
+  SESSION_SECRET: ci-session-secret-at-least-32-characters-long
+
+jobs:
+  check:
+    name: Lint, tipos, pruebas y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Formato
+        run: npm run format:check
+      - name: Tipos
+        run: npm run typecheck
+      - name: Pruebas unitarias
+        run: npm test
+      - name: Build
+        run: npm run build
+
+  e2e:
+    name: E2E y accesibilidad
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Pruebas e2e (API simulada, build de producción)
+        run: npx playwright test
+      - name: Guardar el reporte si falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-resultados
+          path: test-results/
+          retention-days: 7
+
+  # El contrato con la API: los tipos generados deben coincidir con el OpenAPI del backend en `main`.
+  # Si el backend cambia primero, esta verificación falla hasta correr `npm run api:types`.
+  contrato:
+    name: Contrato con la API
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Regenerar tipos desde el backend
+        env:
+          OPENAPI_SOURCE: https://raw.githubusercontent.com/Centro-De-Estudiantes-Informatica/View-Internet-Backend/main/openapi.json
+        run: npm run api:types
+      - name: Verificar que no haya diferencias
+        run: |
+          git diff --exit-code src/lib/api/schema.d.ts || \
+            (echo "::error::Los tipos de la API están desactualizados: ejecuta npm run api:types y commitea src/lib/api/schema.d.ts" && exit 1)
